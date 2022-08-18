@@ -13,4 +13,13 @@ app.use(bodyParser.json());
 
 // Routes is here
 
+//if error is not an instanceof APIError
+app.use(error.converter);
+
+// catch 404 and forward to error handler
+app.use(error.notFound);
+
+//error handler will be called
+app.use(error.handler);
+
 module.exports = app;
