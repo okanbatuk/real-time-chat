@@ -1,0 +1,22 @@
+{
+  "name": "chat-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "api",
+    "chat",
+    "server",
+    "socket"
+  ],
+  "author": "myrnz",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "mongodb": "^4.8.1",
+    "socket.io": "^4.5.1"
+  }
+}
