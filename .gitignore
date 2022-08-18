@@ -1,5 +1,10 @@
+# ignore ALL module files
 node_modules
+
+# ignore .env file
 .env
+
+# ignore ALL temp files
 temp/
 .vscode/
 *.http
