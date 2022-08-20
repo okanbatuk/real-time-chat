@@ -43,6 +43,5 @@ exports.notFound = (req, res, next) => {
     message: "Not Found",
     status: httpStatus.NOT_FOUND,
   });
-  console.log(error);
   return handler(error, req, res, next);
 };
