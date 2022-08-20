@@ -1,7 +1,8 @@
 const express = require("express"),
   morgan = require("morgan"),
   bodyParser = require("body-parser");
-
+const routes = require("../api/routes"),
+  error = require("../api/middlewares/errors.js");
 const app = express();
 
 // Request logging level
@@ -12,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Routes is here
+app.use("/api", routes);
 
 //if error is not an instanceof APIError
 app.use(error.converter);

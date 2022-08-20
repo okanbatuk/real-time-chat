@@ -1,5 +1,4 @@
-const httpStatus = require("http-status"),
-  ExtendableError = require("./extendableError.js");
+const ExtendableError = require("./extendableError.js");
 
 /*
  * Error represents
@@ -9,8 +8,8 @@ const httpStatus = require("http-status"),
 
 class APIError extends ExtendableError {
   constructor({ message, errors, status, stack }) {
-    super(message, errors, status, stack);
+    super({ message, errors, status, stack });
   }
 }
 
-exports.module = APIError;
+module.exports = APIError;

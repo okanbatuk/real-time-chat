@@ -1,8 +1,8 @@
 const httpStatus = require("http-status"),
   expressValidation = require("express-validation"),
-  APIError = require("../errors/APIError");
+  APIError = require("../errors/APIError.js");
 
-exports.handler = (error, req, res, next) => {
+const handler = (error, req, res, next) => {
   const response = {
     status: error.status || httpStatus[error.status],
     message: error.message,
@@ -13,6 +13,7 @@ exports.handler = (error, req, res, next) => {
   res.status(status).json(response);
 };
 
+exports.handler = handler;
 /*
  * error is difference from APIError
  *
@@ -42,5 +43,6 @@ exports.notFound = (req, res, next) => {
     message: "Not Found",
     status: httpStatus.NOT_FOUND,
   });
+  console.log(error);
   return handler(error, req, res, next);
 };
