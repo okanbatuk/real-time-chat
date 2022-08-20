@@ -1,5 +1,4 @@
-const express = require("express"),
-  http = require("http"),
+const http = require("http"),
   app = require("./config/express.js"),
   { host, port } = require("./config/vars"),
   { connect } = require("./config/mongoose.js");
