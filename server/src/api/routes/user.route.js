@@ -41,17 +41,21 @@ router
     } else {
       register(req)
         .then((result) => {
-          if (result) {
+          if (result != null && !(result instanceof Error)) {
             return res.status(httpStatus.CREATED).json({
               message: "Created user successfully",
-              createdUser: result,
+              user: result,
             });
           }
-          let error = {
-            message: "Email has already been used",
-            status: httpStatus.NOT_ACCEPTABLE,
-          };
-          return next(error);
+          if (result == null) {
+            let error = {
+              message: "Email has already been used",
+              status: httpStatus.CONFLICT,
+            };
+            return next(error);
+          }
+
+          return next(result);
         })
         .catch((error) => {
           return next(error);

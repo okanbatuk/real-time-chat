@@ -24,36 +24,25 @@ exports.getAllUsers = async (req, res, next) => {
 // Registration section for users
 exports.register = async (req, res, next) => {
   try {
-    let isMatch = await User.findOne({ email: req.body.email })
+    let response = await User.findOne({ email: req.body.email })
       .exec()
-      .then((result) => {
-        // if result is not a User !(result instanceof User) == true
+      .then(async (result) => {
         if (!(result instanceof User)) {
-          return true;
+          let cryptedPassword = await bcrypt.hash(req.body.password, 10);
+          let user = new User({
+            _id: new mongoose.Types.ObjectId(),
+            email: req.body.email,
+            fullName: req.body.fullName,
+            password: cryptedPassword,
+          });
+          let result = await user.save().then((docs) => {
+            return { fullName: docs.fullName };
+          });
+          return result;
         }
-        return false;
+        return null;
       });
-    if (isMatch) {
-      let cryptedPassword = await bcrypt.hash(req.body.password, 10);
-      let user = new User({
-        _id: new mongoose.Types.ObjectId(),
-        email: req.body.email,
-        fullName: req.body.fullName,
-        password: cryptedPassword,
-      });
-      let result = await user.save().then((docs) => {
-        let response = {
-          fullName: docs.fullName,
-          _id: docs._id,
-          password: docs.password,
-          isActive: docs.isActive,
-          refreshToken: docs.refreshToken,
-        };
-        return response;
-      });
-      return result;
-    }
-    return null;
+    return response;
   } catch (error) {
     return error;
   }
