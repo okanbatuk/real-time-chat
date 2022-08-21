@@ -11,4 +11,6 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB,
   },
+  ACCESS_TOKEN_SECRET_KEY: process.env.ACCESS_TOKEN_SECRET_KEY,
+  REFRESH_TOKEN_SECRET_KEY: process.env.REFRESH_TOKEN_SECRET_KEY,
 };

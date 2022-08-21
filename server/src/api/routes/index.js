@@ -2,7 +2,8 @@ const express = require("express"),
   httpStatus = require("http-status"),
   router = express.Router();
 
-const userRoute = require("./user.route.js");
+const authRoute = require("./auth.route.js"),
+  userRoute = require("./user.route.js");
 
 // GET req => api/status
 router.route("/status").get((req, res, next) => {
@@ -10,6 +11,7 @@ router.route("/status").get((req, res, next) => {
 });
 
 // Routes
+router.use("/", authRoute);
 router.use("/users", userRoute);
 
 // if doesnt exist routes, send error

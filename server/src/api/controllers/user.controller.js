@@ -1,10 +1,10 @@
-const httpStatus = require("http-status"),
-  mongoose = require("mongoose"),
+const mongoose = require("mongoose"),
   bcrypt = require("bcrypt"),
   User = require("../models/user.model.js");
 
 exports.getAllUsers = async (req, res, next) => {
   try {
+    console.log(req.user);
     let result = await User.find(/* { isActive: true } */)
       .select("_id email fullName password isActive")
       .exec()
@@ -17,56 +17,46 @@ exports.getAllUsers = async (req, res, next) => {
       });
     return result;
   } catch (error) {
-    return next(error);
+    return error;
   }
 };
 
 // Registration section for users
 exports.register = async (req, res, next) => {
   try {
-    let cryptedPassword = await bcrypt.hash(req.body.password, 10);
-    let user = new User({
-      _id: new mongoose.Types.ObjectId(),
-      email: req.body.email,
-      fullName: req.body.fullName,
-      password: cryptedPassword,
-    });
-    let result = await user.save().then((docs) => {
-      let response = {
-        fullName: docs.fullName,
-        _id: docs._id,
-        password: docs.password,
-        isActive: docs.isActive,
-      };
-      return response;
-    });
-    return result;
-  } catch (error) {
-    return next(error);
-  }
-};
-
-// users login operation is here
-exports.login = async (req, res, next) => {
-  try {
-    let password = `${req.body.password}`;
-    let user = await User.findOne({ email: req.body.email })
-      .where("isActive", true)
+    let isMatch = await User.findOne({ email: req.body.email })
       .exec()
-      .then((docs) => {
+      .then((result) => {
+        // if result is not a User !(result instanceof User) == true
+        if (!(result instanceof User)) {
+          return true;
+        }
+        return false;
+      });
+    if (isMatch) {
+      let cryptedPassword = await bcrypt.hash(req.body.password, 10);
+      let user = new User({
+        _id: new mongoose.Types.ObjectId(),
+        email: req.body.email,
+        fullName: req.body.fullName,
+        password: cryptedPassword,
+      });
+      let result = await user.save().then((docs) => {
         let response = {
-          _id: docs._id,
-          email: docs.email,
           fullName: docs.fullName,
+          _id: docs._id,
           password: docs.password,
           isActive: docs.isActive,
+          refreshToken: docs.refreshToken,
         };
         return response;
       });
-    let check = await bcrypt.compare(password, user.password);
-    if (check) return user;
+      return result;
+    }
     return null;
-  } catch (error) {}
+  } catch (error) {
+    return error;
+  }
 };
 
 // Get user Function
@@ -82,7 +72,7 @@ exports.getUser = async (req, res, next) => {
       });
     return result;
   } catch (error) {
-    return next(error);
+    return error;
   }
 };
 
@@ -99,7 +89,7 @@ exports.updateInfo = async (req, res, next) => {
     });
     return result;
   } catch (error) {
-    return next(error);
+    return error;
   }
 };
 
@@ -137,6 +127,6 @@ exports.deleteUser = async (req, res, next) => {
     });
     return result;
   } catch (error) {
-    return next(error);
+    return error;
   }
 };
