@@ -1,11 +1,11 @@
 const mongoose = require("mongoose"),
+  httpStatus = require("http-status"),
   bcrypt = require("bcrypt"),
   User = require("../models/user.model.js");
 
 exports.getAllUsers = async (req, res, next) => {
   try {
-    console.log(req.user);
-    let result = await User.find(/* { isActive: true } */)
+    User.find(/* { isActive: true } */)
       .select("_id email fullName password isActive")
       .exec()
       .then((docs) => {
@@ -13,18 +13,24 @@ exports.getAllUsers = async (req, res, next) => {
           count: docs.length,
           users: docs,
         };
-        return response;
+        return res.status(httpStatus.OK).json(response);
       });
-    return result;
   } catch (error) {
-    return error;
+    return next(error);
   }
 };
 
 // Registration section for users
 exports.register = async (req, res, next) => {
   try {
-    let response = await User.findOne({ email: req.body.email })
+    if (!req.body.email || !req.body.password || !req.body.fullName) {
+      let error = {
+        message: "Please enter all required fields.",
+        status: httpStatus.BAD_REQUEST,
+      };
+      return next(error);
+    }
+    User.findOne({ email: req.body.email })
       .exec()
       .then(async (result) => {
         if (!(result instanceof User)) {
@@ -35,16 +41,27 @@ exports.register = async (req, res, next) => {
             fullName: req.body.fullName,
             password: cryptedPassword,
           });
-          let result = await user.save().then((docs) => {
-            return { fullName: docs.fullName };
+          user.save().then((docs) => {
+            if (docs != null && !(docs instanceof Error)) {
+              return res.status(httpStatus.CREATED).json({
+                message: "Created user successfully",
+                user: docs.fullName,
+              });
+            }
           });
-          return result;
+        } else {
+          let error = {
+            message: "Email has already been used",
+            status: httpStatus.CONFLICT,
+          };
+          return next(error);
         }
-        return null;
+      })
+      .catch((err) => {
+        return next(err);
       });
-    return response;
   } catch (error) {
-    return error;
+    return next(error);
   }
 };
 
@@ -52,33 +69,68 @@ exports.register = async (req, res, next) => {
 exports.getUser = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`;
-    let result = await User.findById(id)
-      .select("_id email password fullName isActive")
+    User.findById(id)
+      .select("_id email fullName")
       .where("isActive", "true")
       .exec()
       .then((doc) => {
-        return doc;
+        if (doc) {
+          return res.status(httpStatus.OK).json(doc);
+        }
+        let error = {
+          status: httpStatus.NOT_FOUND,
+          message: "User not found",
+        };
+        return next(error);
       });
-    return result;
   } catch (error) {
-    return error;
+    return next(error);
   }
 };
 
 // Update user's information this section
 exports.updateInfo = async (req, res, next) => {
   try {
-    let id = `${req.params.userId}`;
-
-    let result = await User.updateOne(
-      { _id: id },
-      { $set: { email: req.body.email, fullName: req.body.fullName } }
-    ).then((doc) => {
-      return doc;
-    });
-    return result;
+    if (!req.body.email || !req.body.fullName) {
+      let error = {
+        message: "Please enter all required fields.",
+        status: httpStatus.BAD_REQUEST,
+      };
+      return next(error);
+    }
+    let id = `${req.params.userId}`,
+      email = `${req.body.email}`;
+    let match = await User.findOne({ email: { $eq: email } })
+      .exec()
+      .then((doc) => {
+        if (doc != null && id != doc._id) return true;
+        return false;
+      });
+    if (!match) {
+      User.updateOne(
+        { _id: id, isActive: true },
+        { $set: { email: req.body.email, fullName: req.body.fullName } }
+      ).then((doc) => {
+        if (doc.modifiedCount > 0) {
+          return res
+            .status(httpStatus.OK)
+            .json({ message: "Update is successful", status: httpStatus.OK });
+        }
+        let error = {
+          message: "Nothing has been changed",
+          status: httpStatus.BAD_REQUEST,
+        };
+        return next(error);
+      });
+    } else {
+      let error = {
+        message: "Email address already in use",
+        status: httpStatus.BAD_REQUEST,
+      };
+      return next(error);
+    }
   } catch (error) {
-    return error;
+    return next(error);
   }
 };
 
@@ -108,14 +160,29 @@ exports.updateInfo = async (req, res, next) => {
 exports.deleteUser = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`;
-    let result = await User.updateOne(
-      { _id: id },
-      { $set: { isActive: false } }
-    ).then((doc) => {
-      return doc;
-    });
-    return result;
+    let match = mongoose.Types.ObjectId.isValid(id);
+    if (match) {
+      User.updateOne({ _id: id }, { $set: { isActive: false } }).then((doc) => {
+        if (doc.modifiedCount > 0) {
+          return res.status(httpStatus.OK).json({
+            message: "User deletion successful",
+            status: httpStatus.OK,
+          });
+        }
+        let error = {
+          message: "User deletion failed",
+          status: httpStatus.BAD_REQUEST,
+        };
+        return next(error);
+      });
+    } else {
+      let error = {
+        message: "User deletion failed",
+        status: httpStatus.BAD_REQUEST,
+      };
+      return next(error);
+    }
   } catch (error) {
-    return error;
+    return next(error);
   }
 };

@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken"),
 // Access Token is handled in this section
 exports.generateAccessToken = async (user) => {
   return jwt.sign(user, ACCESS_TOKEN_SECRET_KEY, {
-    expiresIn: "15s",
+    expiresIn: "2h",
   });
 };
 

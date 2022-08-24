@@ -20,12 +20,14 @@ exports.handler = handler;
  */
 exports.converter = (error, req, res, next) => {
   let convertedError = error;
-
-  if (error instanceof expressValidation.ValidationError) {
+  if (
+    error instanceof expressValidation.ValidationError ||
+    error.name == "ValidationError"
+  ) {
     convertedError = new APIError({
       message: "ValidationError",
       errors: error.errors,
-      status: error.status || httpStatus.INTERNAL_SERVER_ERROR,
+      status: error.statusCode || httpStatus.BAD_REQUEST,
       stack: error.stack,
     });
   } else if (!(error instanceof Error)) {
