@@ -8,8 +8,12 @@ const express = require("express"),
     updateInfo,
     deleteUser,
     register,
+    updatePassword,
   } = require("../controllers/user.controller.js"),
-  { registerUser } = require("../validations/user.validation.js");
+  {
+    registerUser,
+    updateUserPassword,
+  } = require("../validations/user.validation.js");
 
 const router = express.Router();
 
@@ -23,7 +27,15 @@ router
   })
   .post(validate(registerUser), register);
 
+router
+  .route("/update-password")
+  .post(checkAuth, validate(updateUserPassword), updatePassword);
+
 // Get user and update user information and delete user
-router.route("/:userId").get(getUser).post(updateInfo).delete(deleteUser);
+router
+  .route("/:userId")
+  .get(getUser)
+  .post(checkAuth, updateInfo)
+  .delete(checkAuth, deleteUser);
 
 module.exports = router;

@@ -1,0 +1,18 @@
+# ignore ALL module files
+node_modules
+
+# ignore .env file
+.env
+
+#ignore all .vscode and .next files
+.vscode/
+.next/
+
+# ignore ALL temp files
+temp/
+
+# ignore any rest client files
+*.http
+
+# ignore any log files
+*.log

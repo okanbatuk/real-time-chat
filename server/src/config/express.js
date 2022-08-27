@@ -1,12 +1,17 @@
 const express = require("express"),
   morgan = require("morgan"),
-  bodyParser = require("body-parser");
-const routes = require("../api/routes"),
+  cors = require("cors"),
+  bodyParser = require("body-parser"),
+  routes = require("../api/routes"),
   error = require("../api/middlewares/errors.js");
+
 const app = express();
 
 // Request logging level
 app.use(morgan("dev"));
+
+// Cross Origin Resource Sharing
+app.use(cors());
 
 // Parse body params and attach them to req.body
 app.use(bodyParser.urlencoded({ extended: false }));

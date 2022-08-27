@@ -135,26 +135,34 @@ exports.updateInfo = async (req, res, next) => {
 };
 
 // TODO: this section is gonna update user password
-/* exports.updatePassword = async (req, res, next) => {
+exports.updatePassword = async (req, res, next) => {
   try {
-    let id = `${req.body.userId}`,
-      oldPass = `${req.body.oldPassword}`,
-      newPass = `${req.body.newPassword}`;
-    
-    let result = 
-      await User
-        .findById(id)
-        .where("isActive",true)
-        .exec()
-        .then((doc) => {
-          let check = await bcrypt.compare(oldPass, doc.password);
-          if(check) {
-            
-          }
-        })
+    let id = `${req.user.UserInfo._id}`,
+      currentPassword = `${req.body.currentPassword}`,
+      newPassword = `${req.body.newPassword}`;
 
-  } catch (error) {}
-}; */
+    User.findById(id)
+      .where("isActive", true)
+      .exec()
+      .then(async (doc) => {
+        let check = await bcrypt.compare(currentPassword, doc.password);
+        if (check) {
+          doc.password = await bcrypt.hash(newPassword, 10);
+          doc.save();
+          return res
+            .status(httpStatus.OK)
+            .json({ message: "Update is successful", status: httpStatus.OK });
+        } else {
+          return res.status(httpStatus.BAD_REQUEST).json({
+            message: "Nothing has been changed",
+            status: httpStatus.BAD_REQUEST,
+          });
+        }
+      });
+  } catch (error) {
+    return next(error);
+  }
+};
 
 // there is users deletion in this section
 exports.deleteUser = async (req, res, next) => {
