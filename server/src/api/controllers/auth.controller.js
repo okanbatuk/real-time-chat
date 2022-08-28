@@ -1,10 +1,41 @@
 const bcrypt = require("bcrypt"),
   httpStatus = require("http-status"),
+  { ObjectId } = require("mongoose").Types,
   User = require("../models/user.model.js"),
   {
     generateAccessToken,
     generateRefreshToken,
   } = require("../../config/passport.js");
+
+// Registration section for users
+exports.register = async (req, res, next) => {
+  try {
+    let user = req.body;
+    let cryptedPassword = await bcrypt.hash(user.password, 10);
+
+    // create new user
+    const newUser = new User({
+      _id: new ObjectId(),
+      email: user.email,
+      fullName: user.fullName,
+      password: cryptedPassword,
+    });
+
+    // save new user and respond
+    let result = await newUser.save();
+    return result != null
+      ? res.status(httpStatus.CREATED).json({
+          message: "Created user successfully",
+          user: newUser.fullName,
+        })
+      : next({
+          message: "Something went wrong",
+          status: httpStatus.BAD_REQUEST,
+        });
+  } catch (error) {
+    return next(error);
+  }
+};
 
 // users login operation is here
 exports.login = async (req, res, next) => {

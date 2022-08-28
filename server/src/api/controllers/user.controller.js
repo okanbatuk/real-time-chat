@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"),
+const { ObjectId } = require("mongoose").Types,
   httpStatus = require("http-status"),
   bcrypt = require("bcrypt"),
   User = require("../models/user.model.js");
@@ -7,37 +7,9 @@ exports.getAllUsers = async (req, res, next) => {
   try {
     let docs = await User.find(/* { isActive: true } */);
     return docs
-      ? res.status(httpStatus.OK).json({ userCount: docs.length, users: docs })
-      : next({
-          message: "Something went wrong",
-          status: httpStatus.BAD_REQUEST,
-        });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-// Registration section for users
-exports.register = async (req, res, next) => {
-  try {
-    let user = req.body;
-    let cryptedPassword = await bcrypt.hash(user.password, 10);
-
-    // create new user
-    const newUser = new User({
-      _id: new mongoose.Types.ObjectId(),
-      email: user.email,
-      fullName: user.fullName,
-      password: cryptedPassword,
-    });
-
-    // save new user and respond
-    let result = await newUser.save();
-    return result != null
-      ? res.status(httpStatus.CREATED).json({
-          message: "Created user successfully",
-          user: newUser.fullName,
-        })
+      ? res
+          .status(httpStatus.OK)
+          .json({ userCount: docs.length, users: docs })
       : next({
           message: "Something went wrong",
           status: httpStatus.BAD_REQUEST,
@@ -78,20 +50,19 @@ exports.updateInfo = async (req, res, next) => {
         status: httpStatus.BAD_REQUEST,
       };
       return next(error);
-    } else {
-      let doc = await User.updateOne(
-        { _id: id, isActive: true },
-        { $set: { email: req.body.email, fullName: req.body.fullName } }
-      );
-      return doc.modifiedCount > 0
-        ? res
-            .status(httpStatus.OK)
-            .json({ message: "Update is successful", status: httpStatus.OK })
-        : next({
-            message: "Nothing has been changed",
-            status: httpStatus.BAD_REQUEST,
-          });
     }
+    let doc = await User.updateOne(
+      { _id: id, isActive: true },
+      { $set: { email: req.body.email, fullName: req.body.fullName } }
+    );
+    return doc.modifiedCount > 0
+      ? res
+          .status(httpStatus.OK)
+          .json({ message: "Update is successful", status: httpStatus.OK })
+      : next({
+          message: "Nothing has been changed",
+          status: httpStatus.BAD_REQUEST,
+        });
   } catch (error) {
     return next(error);
   }
@@ -133,22 +104,16 @@ exports.updatePassword = async (req, res, next) => {
 exports.deleteUser = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`;
-    let match = mongoose.Types.ObjectId.isValid(id);
-    if (match) {
-      let doc = await User.updateOne(
-        { _id: id },
-        { $set: { isActive: false } }
-      );
-      return doc.modifiedCount > 0
-        ? res.status(httpStatus.OK).json({
-            message: "User deletion successful",
-            status: httpStatus.OK,
-          })
-        : next({
-            message: "User deletion failed",
-            status: httpStatus.BAD_REQUEST,
-          });
-    }
+    let doc = await User.updateOne({ _id: id }, { $set: { isActive: false } });
+    return doc.modifiedCount > 0
+      ? res.status(httpStatus.OK).json({
+          message: "User deletion successful",
+          status: httpStatus.OK,
+        })
+      : next({
+          message: "User deletion failed",
+          status: httpStatus.BAD_REQUEST,
+        });
   } catch (error) {
     return next(error);
   }

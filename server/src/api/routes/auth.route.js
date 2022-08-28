@@ -1,10 +1,21 @@
 const express = require("express"),
   httpStatus = require("http-status"),
   { validate } = require("express-validation"),
-  { login } = require("../controllers/auth.controller.js"),
-  { loginValidation } = require("../validations/auth.validation.js");
+  { login, register } = require("../controllers/auth.controller.js"),
+  {
+    registerUser,
+    loginValidation,
+  } = require("../validations/auth.validation.js");
 
 const router = express.Router();
+
+// User registration
+router
+  .route("/register")
+  .get((req, res, next) => {
+    res.status(httpStatus.OK).json({ message: "Register Page" });
+  })
+  .post(validate(registerUser), register);
 
 // User login ops
 router
