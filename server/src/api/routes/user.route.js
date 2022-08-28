@@ -13,11 +13,12 @@ const express = require("express"),
   {
     registerUser,
     updateUserPassword,
+    deleteValidation,
   } = require("../validations/user.validation.js");
 
 const router = express.Router();
 
-router.route("/").get(checkAuth, getAllUsers);
+router.route("/").get(getAllUsers);
 
 // User registration
 router
@@ -36,6 +37,6 @@ router
   .route("/:userId")
   .get(getUser)
   .post(checkAuth, updateInfo)
-  .delete(checkAuth, deleteUser);
+  .delete(checkAuth, validate(deleteValidation), deleteUser);
 
 module.exports = router;
