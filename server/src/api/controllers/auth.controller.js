@@ -4,10 +4,20 @@ const bcrypt = require("bcrypt"),
   User = require("../models/user.model.js"),
   {
     generateAccessToken,
-    generateRefreshToken,
+    // TODO: generateRefreshToken,
   } = require("../../config/passport.js");
 
-// Registration section for users
+// #region Registration section for users
+/*
+ * @body
+ *   {
+ *     email: string
+ *     fullName: string
+ *     password: string
+ *   }
+ *
+ * @public POST /api/register
+ * */
 exports.register = async (req, res, next) => {
   try {
     let user = req.body;
@@ -36,8 +46,18 @@ exports.register = async (req, res, next) => {
     return next(error);
   }
 };
+// #endregion
 
-// users login operation is here
+// #region  users login operation is here
+/*
+ * @body
+ *   {
+ *     email: string
+ *     password: string
+ *   }
+ *
+ * @public POST /api/login
+ * */
 exports.login = async (req, res, next) => {
   try {
     let email = `${req.body.email}`,
@@ -49,7 +69,7 @@ exports.login = async (req, res, next) => {
       foundUser.save();
       let accessToken = await generateAccessToken({
         userInfo: {
-          _id: foundUser._id,
+          _id: foundUser.id,
           email: foundUser.email,
           fullName: foundUser.fullName,
         },
@@ -75,3 +95,4 @@ exports.login = async (req, res, next) => {
     return next(error);
   }
 };
+// #endregion

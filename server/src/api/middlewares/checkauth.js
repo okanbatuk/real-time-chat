@@ -2,6 +2,10 @@ const jwt = require("jsonwebtoken"),
   httpStatus = require("http-status"),
   { ACCESS_TOKEN_SECRET_KEY } = require("../../config/vars.js");
 
+/*
+ * This function is used to check if the user is logged in
+ * @private
+ */
 module.exports = (req, res, next) => {
   try {
     const token =

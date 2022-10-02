@@ -1,41 +1,49 @@
-const { ObjectId } = require("mongoose").Types,
-  httpStatus = require("http-status"),
+const httpStatus = require("http-status"),
   bcrypt = require("bcrypt"),
   User = require("../models/user.model.js");
 
+//#region Load all users
+/*
+ *
+ *@public GET /api/users
+ */
 exports.getAllUsers = async (req, res, next) => {
-  try {
-    let docs = await User.find(/* { isActive: true } */);
-    return docs
-      ? res.status(httpStatus.OK).json({ userCount: docs.length, users: docs })
-      : next({
-          message: "Something went wrong",
-          status: httpStatus.BAD_REQUEST,
-        });
-  } catch (error) {
-    return next(error);
-  }
+  let users = await User.find(/* { isActive: true } */);
+  return res
+    .status(httpStatus.OK)
+    .json({ userCount: users.length, users: users });
 };
+//#endregion
 
-// Get user Function
+//#region Get User Information
+/*
+ *
+ * @public GET /api/users/:userId
+ *
+ */
 exports.getUser = async (req, res, next) => {
-  try {
-    let id = `${req.params.userId}`;
-    let doc = await User.findById(id).where("isActive", true);
-    return doc
-      ? res
-          .status(httpStatus.OK)
-          .json({ id: doc._id, email: doc.email, fullName: doc.fullName })
-      : next({
-          status: httpStatus.NOT_FOUND,
-          message: "User not found",
-        });
-  } catch (error) {
-    return next(error);
-  }
+  let id = `${req.params.userId}`;
+  let doc = await User.findById({ _id: { $eq: id }, isActive: true });
+  return doc
+    ? res
+        .status(httpStatus.OK)
+        .json({ id: doc._id, email: doc.email, fullName: doc.fullName })
+    : next({
+        status: httpStatus.NOT_FOUND,
+        message: "User not found",
+      });
 };
+//#endregion
 
-// Update user's information this section
+//#region Update user's information
+/*
+ * @params {ObjectId} userId
+ * @body {String} email
+ * @body {String} fullName
+ *
+ * @public POST /api/users/:userId
+ *
+ */
 exports.updateInfo = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`,
@@ -58,7 +66,7 @@ exports.updateInfo = async (req, res, next) => {
       }
       let doc = await User.updateOne(
         { _id: id, isActive: true },
-        { $set: { email: req.body.email, fullName: req.body.fullName } }
+        { $set: { email: email, fullName: req.body.fullName } }
       );
       return doc.modifiedCount > 0
         ? res
@@ -81,11 +89,20 @@ exports.updateInfo = async (req, res, next) => {
     return next(error);
   }
 };
+//#endregion
 
-// this section is update user password
+//#region Update user password
+/*
+ * @req.user decoded from checkAuth.js
+ * @body {String} currentPassword
+ * @body {String} newPassword
+ *
+ * @public POST /api/users/update-password
+ */
 exports.updatePassword = async (req, res, next) => {
   try {
-    let id = `${req.user.UserInfo._id}`,
+    console.log(req.user);
+    let id = `${req.user._id}`,
       currentPassword = `${req.body.currentPassword}`,
       newPassword = await bcrypt.hash(req.body.newPassword, 10);
 
@@ -98,6 +115,7 @@ exports.updatePassword = async (req, res, next) => {
         ? res.status(httpStatus.OK).json({
             message: "Account has been updated successfully",
             status: httpStatus.OK,
+            savedUser: user,
           })
         : next({
             message: "Something went wrong",
@@ -113,8 +131,14 @@ exports.updatePassword = async (req, res, next) => {
     return next(error);
   }
 };
+//#endregion
 
-// there is users deletion in this section
+//#region Delete users process
+/*
+ * @params {ObjectId} userId
+ *
+ * @public DELETE /api/users/:userId
+ */
 exports.deleteUser = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`;
@@ -132,3 +156,4 @@ exports.deleteUser = async (req, res, next) => {
     return next(error);
   }
 };
+//#endregion
