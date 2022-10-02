@@ -20,10 +20,7 @@ exports.handler = handler;
  */
 exports.converter = (error, req, res, next) => {
   let convertedError = error;
-  if (
-    error instanceof expressValidation.ValidationError ||
-    error.name == "ValidationError"
-  ) {
+  if (error.name == "ValidationError") {
     convertedError = new APIError({
       message: "ValidationError",
       errors: error.errors,

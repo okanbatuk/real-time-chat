@@ -10,7 +10,7 @@ const express = require("express"),
   } = require("../controllers/user.controller.js"),
   {
     updateUserPassword,
-    deleteValidation,
+    paramsValidation,
   } = require("../validations/user.validation.js");
 
 const router = express.Router();
@@ -25,7 +25,7 @@ router
 router
   .route("/:userId")
   .get(getUser)
-  .post(checkAuth, updateInfo)
-  .delete(checkAuth, validate(deleteValidation), deleteUser);
+  .post(checkAuth, validate(paramsValidation), updateInfo)
+  .delete(checkAuth, validate(paramsValidation), deleteUser);
 
 module.exports = router;

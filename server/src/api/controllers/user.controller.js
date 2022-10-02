@@ -7,9 +7,7 @@ exports.getAllUsers = async (req, res, next) => {
   try {
     let docs = await User.find(/* { isActive: true } */);
     return docs
-      ? res
-          .status(httpStatus.OK)
-          .json({ userCount: docs.length, users: docs })
+      ? res.status(httpStatus.OK).json({ userCount: docs.length, users: docs })
       : next({
           message: "Something went wrong",
           status: httpStatus.BAD_REQUEST,
@@ -41,28 +39,44 @@ exports.getUser = async (req, res, next) => {
 exports.updateInfo = async (req, res, next) => {
   try {
     let id = `${req.params.userId}`,
-      email = `${req.body.email}`;
+      email = `${req.body.email}`,
+      error = "";
 
-    let user = await User.findOne({ email: { $eq: email } });
-    if (user && id != user._id) {
-      let error = {
-        message: "Email address already in use",
-        status: httpStatus.BAD_REQUEST,
+    // TODO: use user.findOne with id params Instead  of email params
+    let user = await User.findOne({ _id: { $eq: id }, isActive: true });
+
+    if (user !== null) {
+      let conflictUser = await User.findOne({
+        email: { $eq: email },
+      });
+      if (conflictUser !== null && id !== conflictUser.id) {
+        error = {
+          message: "This mail already in use",
+          status: httpStatus.BAD_REQUEST,
+        };
+        return next(error);
+      }
+      let doc = await User.updateOne(
+        { _id: id, isActive: true },
+        { $set: { email: req.body.email, fullName: req.body.fullName } }
+      );
+      return doc.modifiedCount > 0
+        ? res
+            .status(httpStatus.OK)
+            .json({ message: "Update is successful", status: httpStatus.OK })
+        : next({
+            message: "Nothing has been changed",
+            status: httpStatus.BAD_REQUEST,
+          });
+    } else {
+      error = {
+        message: "User not found",
+        status: httpStatus.NOT_FOUND,
       };
       return next(error);
     }
-    let doc = await User.updateOne(
-      { _id: id, isActive: true },
-      { $set: { email: req.body.email, fullName: req.body.fullName } }
-    );
-    return doc.modifiedCount > 0
-      ? res
-          .status(httpStatus.OK)
-          .json({ message: "Update is successful", status: httpStatus.OK })
-      : next({
-          message: "Nothing has been changed",
-          status: httpStatus.BAD_REQUEST,
-        });
+
+    // TODO: user is null when return error
   } catch (error) {
     return next(error);
   }
