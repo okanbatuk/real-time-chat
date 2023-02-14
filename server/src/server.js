@@ -1,8 +1,7 @@
-const http = require("http"),
-  app = require("./config/express.js"),
-  { Server } = require("socket.io"),
-  { host, port } = require("./config/vars"),
-  { connect } = require("./config/mongoose.js");
+const http = require("http");
+const app = require("./config/express.js");
+const { Server } = require("socket.io");
+const { host, port } = require("./config/vars");
 
 // Server configuration and build
 const server = http.createServer(app);
@@ -32,5 +31,4 @@ io.on("connection", (socket) => {
 server.listen(port, (err) => {
   if (err) throw err;
   console.log(`Server running at http://${host}:${port}`);
-  connect();
 });

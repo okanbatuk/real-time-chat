@@ -9,6 +9,7 @@ mongoose.connection.on("error", (err) => {
 
 // connect to mongo db
 exports.connect = () => {
+  mongoose.set("strictQuery", false);
   mongoose
     .connect(mongo.uri, {
       useNewUrlParser: true,

@@ -1,13 +1,12 @@
-const httpStatus = require("http-status"),
-  expressValidation = require("express-validation"),
-  APIError = require("../errors/APIError.js");
+const httpStatus = require("http-status");
+const APIError = require("../errors/APIError.js");
 
 const handler = (error, req, res, next) => {
   const response = {
+    error: true,
     status: error.status || httpStatus[error.status],
     message: error.message,
     errors: error.errors,
-    stack: error.stack,
   };
   let status = response.status || httpStatus.INTERNAL_SERVER_ERROR;
   res.status(status).json(response);
@@ -25,13 +24,16 @@ exports.converter = (error, req, res, next) => {
       message: "ValidationError",
       errors: error.errors,
       status: error.statusCode || httpStatus.BAD_REQUEST,
-      stack: error.stack,
+    });
+  } else if (error.code && error.code === 11000) {
+    convertedError = new APIError({
+      message: "User is already registered",
+      status: httpStatus.CONFLICT,
     });
   } else if (!(error instanceof Error)) {
     convertedError = new APIError({
       message: error.message,
-      status: error.status || httpStatus.INTERNAL_SERVER_ERROR,
-      stack: error.stack,
+      status: error.status || httpStatus.BAD_REQUEST,
     });
   }
   return handler(convertedError, req, res, next);

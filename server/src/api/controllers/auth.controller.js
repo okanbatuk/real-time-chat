@@ -1,11 +1,8 @@
-const bcrypt = require("bcrypt"),
-  httpStatus = require("http-status"),
-  { ObjectId } = require("mongoose").Types,
-  User = require("../models/user.model.js"),
-  {
-    generateAccessToken,
-    // TODO: generateRefreshToken,
-  } = require("../../config/passport.js");
+const bcrypt = require("bcrypt");
+const httpStatus = require("http-status");
+const { ObjectId } = require("mongoose").Types;
+const User = require("../models/user.model.js");
+const tokens = require("../../config/passport.js");
 
 // #region Registration section for users
 /*
@@ -35,7 +32,7 @@ exports.register = async (req, res, next) => {
     let result = await newUser.save();
     return result != null
       ? res.status(httpStatus.CREATED).json({
-          message: "Created user successfully",
+          message: "User created successfully",
           user: newUser.fullName,
         })
       : next({
@@ -60,14 +57,14 @@ exports.register = async (req, res, next) => {
  * */
 exports.login = async (req, res, next) => {
   try {
-    let email = `${req.body.email}`,
-      password = `${req.body.password}`;
+    let isMatch = false;
+    let { email, password } = req.body;
     let foundUser = await User.findOne({ email: { $eq: email } });
-    let isMatch = await bcrypt.compare(password, foundUser.password);
-    if (isMatch) {
+    isMatch = foundUser && bcrypt.compare(password, foundUser.password);
+    if (foundUser && isMatch) {
       foundUser.isActive = true;
       foundUser.save();
-      let accessToken = await generateAccessToken({
+      let accessToken = await tokens.generateAccessToken({
         userInfo: {
           _id: foundUser.id,
           email: foundUser.email,

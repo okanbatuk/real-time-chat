@@ -1,11 +1,14 @@
-const express = require("express"),
-  morgan = require("morgan"),
-  cors = require("cors"),
-  bodyParser = require("body-parser"),
-  routes = require("../api/routes"),
-  error = require("../api/middlewares/errors.js");
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const routes = require("../api/routes");
+const error = require("../api/middlewares/errors.js");
+const { connect } = require("../config/mongoose");
 
 const app = express();
+
+connect();
 
 // Request logging level
 app.use(morgan("dev"));
